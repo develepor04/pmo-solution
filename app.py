@@ -389,11 +389,9 @@ ALLOWED_ORIGINS = [
     "http://137.184.8.31:8000",
     "capacitor://localhost",
     "http://localhost:3000",
-    "https://localhost:3000",
+    "https://localhost:3000", 
     "https://app.pmo.thetadynamics.io",
     "https://pmo.thetadynamics.io",
-    "https://account.thetapulse.ai",
-    "https://app.thetapulse.ai",
 ]
  
 CORS(

@@ -403,32 +403,10 @@ def compute_metrics_from_sheet(data: dict) -> dict:
     total_forecast = sum(num(r, 'Forecast Cost (AED)') for r in activities)
     cost_exposure_aed = total_forecast - total_budget
 
-    # Productivity Index per row: use the sheet's own value if present: else,
-    # for rows that logged Planned/Actual Hours + Output but never got a
-    # computed Index, derive it the same way the reference workbook's row
-    # formula does: (actual output rate) / (planned output rate). Rows
-    # missing hours/output entirely (most non-construction phases) are
-    # excluded from the average either way, matching the reference's
-    # "avg of rows with hours logged" definition.
-    def _row_productivity_index(r):
-        raw = get(r, 'Productivity Index')
-        if raw not in (None, ''):
-            return num(r, 'Productivity Index')
-        planned_hours = num(r, 'Planned Hours')
-        actual_hours = num(r, 'Actual Hours')
-        planned_output = num(r, 'Planned Output')
-        actual_output = num(r, 'Actual Output')
-        has_all = all(
-            get(r, c) not in (None, '')
-            for c in ('Planned Hours', 'Actual Hours', 'Planned Output', 'Actual Output')
-        )
-        if has_all and actual_hours > 0 and planned_output > 0 and planned_hours > 0:
-            planned_rate = planned_output / planned_hours
-            actual_rate = actual_output / actual_hours
-            return (actual_rate / planned_rate) if planned_rate else None
-        return None
-
-    productivity_vals = [v for v in (_row_productivity_index(r) for r in activities) if v is not None]
+    productivity_vals = [
+        num(r, 'Productivity Index') for r in activities
+        if get(r, 'Productivity Index') not in (None, '')
+    ]
     productivity_index = (sum(productivity_vals) / len(productivity_vals)) if productivity_vals else 0.0
 
     schedule_health = max(0.0, 1 - (avg_delay * 0.05))
@@ -518,36 +496,16 @@ def compute_metrics_from_sheet(data: dict) -> dict:
         if c and c not in categories_present:
             categories_present.append(c)
 
-    # Full per-category rollup (all categories, not just the worst 3),
-    # mirroring the reference workbook's "Cost Intelligence panel": budget,
-    # forecast, variance vs budget and % of budget per category.
     breakdown_candidates = []
     for cat in categories_present:
-        cat_rows = [r for r in activities if str(get(r, 'Cost Category', '') or '').strip() == cat]
-        cat_budget = sum(num(r, 'Budget Cost (AED)') for r in cat_rows)
-        cat_forecast = sum(num(r, 'Forecast Cost (AED)') for r in cat_rows)
-        cat_variance = cat_forecast - cat_budget
-        pct_of_budget = (cat_forecast / cat_budget) if cat_budget else None
-        breakdown_candidates.append({
-            'category': cat, 'budget': cat_budget, 'forecast': cat_forecast,
-            'variance': cat_variance, 'pctOfBudget': pct_of_budget,
-        })
-    breakdown_candidates.sort(key=lambda x: x['variance'], reverse=True)
+        cat_budget = sum(num(r, 'Budget Cost (AED)') for r in activities if str(get(r, 'Cost Category', '') or '').strip() == cat)
+        cat_forecast = sum(num(r, 'Forecast Cost (AED)') for r in activities if str(get(r, 'Cost Category', '') or '').strip() == cat)
+        breakdown_candidates.append((cat, cat_forecast - cat_budget))
+    breakdown_candidates.sort(key=lambda x: x[1], reverse=True)
 
-    cost_breakdown = [
-        {'label': c['category'], 'value': _format_money_aed(c['variance'])}
-        for c in breakdown_candidates if c['variance'] != 0
-    ][:3]
-    cost_category_table = [
-        {
-            'category': c['category'],
-            'budget': round(c['budget'] / 1_000_000, 3),
-            'forecast': round(c['forecast'] / 1_000_000, 3),
-            'variance': _format_money_aed(c['variance']),
-            'pctOfBudget': round(c['pctOfBudget'] * 100) if c['pctOfBudget'] is not None else None,
-        }
-        for c in breakdown_candidates
-    ]
+    cost_breakdown = []
+    for cat, variance in breakdown_candidates[:3]:
+        cost_breakdown.append({'label': cat, 'value': _format_money_aed(variance)})
 
     ai_insight = (
         f'Live sheet data: {total} activities tracked. {delayed_count} are behind schedule, '
@@ -578,7 +536,6 @@ def compute_metrics_from_sheet(data: dict) -> dict:
         'scheduleRows': schedule_rows,
         'costChart': cost_chart,
         'costBreakdown': cost_breakdown,
-        'costCategoryTable': cost_category_table,
         'aiInsight': ai_insight,
         'costLinkage': cost_linkage,
     }

@@ -8,8 +8,6 @@ import '@univerjs/preset-sheets-core/lib/index.css';
 import { sheetService } from '../services/api';
 import { toUniverWorkbookData, fromUniverWorkbookData, blankGrid } from '../utils/sheetDataUtils';
 import { validateSheetGrid } from '../utils/thetaValidation';
-import AddRowForm from './AddRowForm';
-import ColumnTypeForm, { convertCellValue } from './ColumnTypeForm';
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -47,8 +45,6 @@ const SpreadsheetEditor = forwardRef(function SpreadsheetEditor({
   const fileInputRef = useRef(null);
   const [remountKey, setRemountKey] = useState(0);
   const [localData, setLocalData] = useState(() => initialData || blankGrid());
-  const [addRowContext, setAddRowContext] = useState(null); // { sheetName, headers, rows }
-  const [columnTypeContext, setColumnTypeContext] = useState(null); // { sheetName, headers }
 
   // Read the live grid directly from Univer's current state, rather than
   // whatever was last captured by the debounced auto-save's onChange — the
@@ -208,145 +204,31 @@ const SpreadsheetEditor = forwardRef(function SpreadsheetEditor({
     e.target.value = '';
   }
 
-  // Opens the Add Row form pre-loaded with whichever sheet tab is currently
-  // active in Univer -- rows get appended to that same tab, not always the
-  // first one, so it matches whatever the user is actually looking at.
-  function openAddRow() {
-    const workbook = univerAPIRef.current?.getActiveWorkbook();
-    if (!workbook) return;
-    const activeSheetName = workbook.getActiveSheet()?.getSheetName();
-    const grid = fromUniverWorkbookData(workbook.save());
-    const sheet = grid.sheets.find(s => s.name === activeSheetName) || grid.sheets[0];
-    if (!sheet) return;
-    setAddRowContext({ sheetName: sheet.name, headers: sheet.headers, rows: sheet.rows });
-  }
-
-  function handleAddRowSubmit(rowValues) {
-    const workbook = univerAPIRef.current?.getActiveWorkbook();
-    const targetName = addRowContext?.sheetName;
-    if (!workbook || !targetName) { setAddRowContext(null); return; }
-    const grid = fromUniverWorkbookData(workbook.save());
-    const sheets = grid.sheets.map(s => (s.name === targetName ? { ...s, rows: [...s.rows, rowValues] } : s));
-    setLocalData({ sheets });
-    setRemountKey(k => k + 1);
-    setAddRowContext(null);
-    setTimeout(() => {
-      // Remounting resets Univer's active tab to the first sheet -- flip it
-      // back to whichever tab the row was actually added to.
-      const wb = univerAPIRef.current?.getActiveWorkbook();
-      const sheet = wb?.getSheetByName(targetName);
-      if (sheet) wb.setActiveSheet(sheet);
-      doSave();
-    }, 150);
-  }
-
-  // Opens the "set column type" tool for whichever sheet tab is currently
-  // active -- Univer's own toolbar has no number-format control in this
-  // bundle, so this is a custom stand-in that rewrites the column's actual
-  // stored values (not a visual-only format) into the chosen type.
-  function openColumnType() {
-    const workbook = univerAPIRef.current?.getActiveWorkbook();
-    if (!workbook) return;
-    const activeSheetName = workbook.getActiveSheet()?.getSheetName();
-    const grid = fromUniverWorkbookData(workbook.save());
-    const sheet = grid.sheets.find(s => s.name === activeSheetName) || grid.sheets[0];
-    if (!sheet) return;
-    setColumnTypeContext({ sheetName: sheet.name, headers: sheet.headers });
-  }
-
-  function handleApplyColumnType(columnName, type) {
-    const workbook = univerAPIRef.current?.getActiveWorkbook();
-    const targetName = columnTypeContext?.sheetName;
-    if (!workbook || !targetName) { setColumnTypeContext(null); return; }
-    const grid = fromUniverWorkbookData(workbook.save());
-    const sheets = grid.sheets.map(s => {
-      if (s.name !== targetName) return s;
-      const colIdx = s.headers.indexOf(columnName);
-      if (colIdx === -1) return s;
-      return {
-        ...s,
-        rows: s.rows.map(row => {
-          const newRow = [...row];
-          newRow[colIdx] = convertCellValue(row[colIdx], type);
-          return newRow;
-        }),
-      };
-    });
-    setLocalData({ sheets });
-    setRemountKey(k => k + 1);
-    setColumnTypeContext(null);
-    setTimeout(() => {
-      const wb = univerAPIRef.current?.getActiveWorkbook();
-      const sheet = wb?.getSheetByName(targetName);
-      if (sheet) wb.setActiveSheet(sheet);
-      doSave();
-    }, 150);
-  }
-
   return (
     <div style={{ height, width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 0 8px' }}>
-        {!hideToolbar && (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleImportFile}
-              style={{ display: 'none' }}
-            />
-            <button
-              type="button"
-              onClick={triggerImport}
-              style={{
-                padding: '6px 14px', background: '#f1f5f9', color: '#334155',
-                border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 12.5,
-                fontWeight: 600, cursor: 'pointer',
-              }}
-            >
-              Import file
-            </button>
-          </>
-        )}
-        <button
-          type="button"
-          onClick={openColumnType}
-          style={{
-            padding: '6px 14px', background: '#f1f5f9', color: '#334155',
-            border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 12.5,
-            fontWeight: 600, cursor: 'pointer',
-          }}
-        >
-          Column Type
-        </button>
-        <button
-          type="button"
-          onClick={openAddRow}
-          style={{
-            padding: '6px 14px', background: '#0f766e', color: '#fff',
-            border: 'none', borderRadius: 7, fontSize: 12.5,
-            fontWeight: 600, cursor: 'pointer',
-          }}
-        >
-          Add Row
-        </button>
-      </div>
+      {!hideToolbar && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 0 8px' }}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleImportFile}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            onClick={triggerImport}
+            style={{
+              padding: '6px 14px', background: '#f1f5f9', color: '#334155',
+              border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 12.5,
+              fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Import file
+          </button>
+        </div>
+      )}
       <div ref={containerRef} style={{ flex: 1, width: '100%', minHeight: 0 }} />
-      {addRowContext && (
-        <AddRowForm
-          headers={addRowContext.headers}
-          rows={addRowContext.rows}
-          onSubmit={handleAddRowSubmit}
-          onClose={() => setAddRowContext(null)}
-        />
-      )}
-      {columnTypeContext && (
-        <ColumnTypeForm
-          headers={columnTypeContext.headers}
-          onApply={handleApplyColumnType}
-          onClose={() => setColumnTypeContext(null)}
-        />
-      )}
     </div>
   );
 });

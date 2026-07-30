@@ -73,7 +73,7 @@ d:\Anurag\PMO\data\.env
 
 Should contain:
 ```env
-SECRET_KEY=your-secret-key-change-in-production
+SECRET_KEY=your-secret-key-change-in-production-to-something-secure
 GROQ_API_KEY=your-groq-api-key
 FLASK_ENV=development
 FLASK_DEBUG=True
