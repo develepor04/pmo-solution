@@ -1,0 +1,24 @@
+__pycache__/
+*.pyc
+outputs/
+uploads/
+venv/
+# Knowledgebase/
+# databases
+database/*.db
+database/*.json
+!database/recovery_narrative.json
+.env
+.env.*
+!.env.example
+database/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.*
+!frontend/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
