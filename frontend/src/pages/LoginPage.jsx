@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import useStore from '../store/useStore';
-import { authService } from '../services/api';
+import { authService, getHealthStatus } from '../services/api';
 import { getMsalInstance, loginRequest, TEAMS_DOMAIN } from '../services/msalConfig';
 import { googleSignInPopup } from '../services/googleConfig';
 import './AuthPages.css';
@@ -20,6 +20,30 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [msLoading, setMsLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await getHealthStatus();
+        if (cancelled) return;
+        if (data.ready) {
+          toast.success('System connected', { id: 'system-health', duration: 3000 });
+        } else {
+          toast.error('System unavailable — login may fail', { id: 'system-health', duration: 4000 });
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error('Cannot reach backend', { id: 'system-health', duration: 4000 });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const isTeamsDomain = formData.email.toLowerCase().endsWith(`@${TEAMS_DOMAIN}`);
 

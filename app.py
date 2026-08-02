@@ -5457,6 +5457,41 @@ def health_check():
         'timestamp': datetime.now().isoformat()
     })
 
+
+@app.route('/api/health/status', methods=['GET'])
+def health_status():
+    """Public deploy-readiness check for login page (no secrets exposed)."""
+    checks = []
+
+    def add_check(name, ok, message):
+        checks.append({'name': name, 'status': 'ok' if ok else 'fail', 'message': message})
+
+    add_check('api', True, 'Backend is running')
+
+    try:
+        from db_postgres import get_pool
+        pool = get_pool()
+        conn = pool.getconn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute('SELECT 1')
+            add_check('database', True, 'Database connected')
+        finally:
+            pool.putconn(conn)
+    except Exception:
+        add_check('database', False, 'Database unavailable')
+
+    config_ok = all(str(os.getenv(key, '')).strip() for key in ('DB_HOST', 'DB_USER', 'DB_NAME'))
+    add_check('config', config_ok, 'Environment configured' if config_ok else 'Missing database config')
+
+    ready = all(check['status'] == 'ok' for check in checks)
+
+    return jsonify({
+        'ready': ready,
+        'checks': checks,
+        'timestamp': datetime.now().isoformat(),
+    })
+
 @app.route('/api/stats', methods=['GET'])
 @token_required
 def get_stats(current_user):

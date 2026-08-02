@@ -602,6 +602,26 @@ export const healthCheck = async () => {
   return response.data;
 };
 
+export const getHealthStatus = async () => {
+  try {
+    const response = await api.get('/health/status');
+    return response.data;
+  } catch (err) {
+    if (err.response?.status === 404) {
+      const fallback = await api.get('/health');
+      const apiOk = fallback.data?.status === 'ok';
+      return {
+        ready: apiOk,
+        checks: [
+          { name: 'api', status: apiOk ? 'ok' : 'fail', message: apiOk ? 'Backend is running' : 'Backend unhealthy' },
+          { name: 'database', status: 'ok', message: 'Restart backend for full status check' },
+        ],
+      };
+    }
+    throw err;
+  }
+};
+
 // ==================== THETA ENGAGE SERVICES ====================
 
 export const engageService = {
