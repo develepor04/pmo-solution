@@ -10,7 +10,11 @@
    ```bash
    python app.py
    ```
-5. On startup, `app.py` will automatically execute `init_chat_history_table()` — no manual step needed.
+5. On startup, go to root folder of pmo-solution `app.py` will automatically execute `init_chat_history_table()` — no manual step needed.
+
+To start frontend go to pmo-solution/frontend:
+npm install
+npm run dev
 
 ## 2. Pulling `.env` Files from Server
 
