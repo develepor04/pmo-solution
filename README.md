@@ -23,7 +23,6 @@ scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/database/.env "<LOCAL_PA
 ## 3. Preview a pull before applying it:
 ```bash
 git fetch origin prod-sync-clean
-git diff HEAD origin/prod-sync-clean --stat
 ```
 
 > **Security note:** Real credentials are intentionally not included here. Store them in a proper secrets manager (Azure Key Vault, 1Password, Vault, etc.) or a `.env` file excluded from version control, and rotate any that may have been exposed in plaintext elsewhere.
