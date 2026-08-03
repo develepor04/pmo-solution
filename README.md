@@ -20,7 +20,7 @@ scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/.env "<LOCAL_PATH>/.env"
 scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/database/.env "<LOCAL_PATH>/database/.env"
 ```
 
-**  => Preview a pull before applying it:**
+## 3. Preview a pull before applying it:**
 ```bash
 git fetch origin prod-sync-clean
 git diff HEAD origin/prod-sync-clean --stat
