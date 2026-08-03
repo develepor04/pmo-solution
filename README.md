@@ -15,9 +15,9 @@
 ## 2. Pulling `.env` Files from Server
 
 ```bash
-scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/.env "<LOCAL_PATH>/.env"
+scp -i "pem_file_name.pem" azureuser@<SERVER_IP>:~/pmoInterface2/.env "<LOCAL_PATH>/.env"
 
-scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/database/.env "<LOCAL_PATH>/database/.env"
+scp -i "pem_file_name.pem" azureuser@<SERVER_IP>:~/pmoInterface2/database/.env "<LOCAL_PATH>/database/.env"
 ```
 
 ## 3. Preview a pull before applying it:
