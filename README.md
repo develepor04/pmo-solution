@@ -26,15 +26,6 @@ git fetch origin prod-sync-clean
 git diff HEAD origin/prod-sync-clean --stat
 ```
 
-## 4. Accounts (credentials redacted — see your secrets manager / password vault)
-
-| Environment | Email | Password |
-|---|---|---|
-| App — Super Admin | `superadmin@thetaai.ai` | `<PLACEHOLDER_PASSWORD>` |
-| App — Demo Admin | `admin@demo.thetaai.ai` | `<PLACEHOLDER_PASSWORD>` |
-| App — Demo User | `user@demo.thetaai.ai` | `<PLACEHOLDER_PASSWORD>` |
-| Server — Admin | `admindescon@thetaai.io` | `<PLACEHOLDER_PASSWORD>` |
-
 > **Security note:** Real credentials are intentionally not included here. Store them in a proper secrets manager (Azure Key Vault, 1Password, Vault, etc.) or a `.env` file excluded from version control, and rotate any that may have been exposed in plaintext elsewhere.
 
 ## 5. Deployment Document
