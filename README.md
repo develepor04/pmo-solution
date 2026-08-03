@@ -36,3 +36,6 @@ git diff HEAD origin/prod-sync-clean --stat
 | Server — Admin | `admindescon@thetaai.io` | `<PLACEHOLDER_PASSWORD>` |
 
 > **Security note:** Real credentials are intentionally not included here. Store them in a proper secrets manager (Azure Key Vault, 1Password, Vault, etc.) or a `.env` file excluded from version control, and rotate any that may have been exposed in plaintext elsewhere.
+
+## 5. Deployment Document
+[Deployment Document](https://apliaglobal77-my.sharepoint.com/:w:/g/personal/aniket_apliaglobal_com/IQD3oXE_AP86TrlNOTCX_hyXAQ7CKGhzC-H-g7Ql-ER1qp4?e=ZUiTRS)
