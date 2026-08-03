@@ -20,23 +20,7 @@ scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/.env "<LOCAL_PATH>/.env"
 scp -i "tkvp.pem" azureuser@<SERVER_IP>:~/pmoInterface2/database/.env "<LOCAL_PATH>/database/.env"
 ```
 
-## 3. Git Pull Issue (file not updating on Windows)
-
-If a specific file isn't pulling correctly on Windows:
-
-**Option A — Ignore local changes to that file:**
-```bash
-git update-index --assume-unchanged <path/to/file>
-```
-
-**Option B — Sparse-checkout to exclude it:**
-```bash
-# On the server, before pulling
-git sparse-checkout init --cone
-git sparse-checkout set '/*' '!<file-to-exclude>'
-```
-
-**Option C — Preview a pull before applying it:**
+** => Preview a pull before applying it:**
 ```bash
 git fetch origin prod-sync-clean
 git diff HEAD origin/prod-sync-clean --stat
