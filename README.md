@@ -1,6 +1,6 @@
 # Theta — Development and Deployment guide
 
-## 1. Development Setup
+## 1. Development Setup Document
 [Development Document](https://apliaglobal77-my.sharepoint.com/:w:/g/personal/aniket_apliaglobal_com/IQDD-RS2lxbQT7aByRl5JKtWAVoyNIKxbygDjxty-iomcNI?e=d5VT5F)
 
 ## 2. Deployment Document
